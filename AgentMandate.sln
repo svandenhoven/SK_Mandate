@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentMandate", "AgentMandate\AgentMandate.csproj", "{A03521E1-2185-4177-A00D-6D3A2942AC40}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PurchaseAPI", "PurchaseAPI\PurchaseAPI.csproj", "{0102525B-1E54-4657-9156-E6DF53796336}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sk_agent", "sk_agents\sk_agent.csproj", "{E26450DB-7F89-4160-BAE4-D80533981659}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A03521E1-2185-4177-A00D-6D3A2942AC40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A03521E1-2185-4177-A00D-6D3A2942AC40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A03521E1-2185-4177-A00D-6D3A2942AC40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A03521E1-2185-4177-A00D-6D3A2942AC40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0102525B-1E54-4657-9156-E6DF53796336}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0102525B-1E54-4657-9156-E6DF53796336}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0102525B-1E54-4657-9156-E6DF53796336}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0102525B-1E54-4657-9156-E6DF53796336}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E26450DB-7F89-4160-BAE4-D80533981659}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E26450DB-7F89-4160-BAE4-D80533981659}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E26450DB-7F89-4160-BAE4-D80533981659}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E26450DB-7F89-4160-BAE4-D80533981659}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
