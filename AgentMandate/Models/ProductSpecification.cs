@@ -11,6 +11,8 @@ namespace AgentMandate.Models
         public string Name { get; set; }
         public string Manufacturer { get; set; }
         public decimal Price { get; set; }
+
+        public string Discount { get; set; }
         
     }
 }

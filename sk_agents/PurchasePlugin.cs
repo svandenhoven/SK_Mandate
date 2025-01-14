@@ -159,7 +159,7 @@ internal sealed class PurchasePlugin
     private async Task<HttpClient> CreateHttpClient()
     {
         // Get an access token for the API
-        string[] scopes = _settings.AzureAD.APIScope.Split(' ');
+        string[] scopes = _settings.AzureAD.APIScopes.Split(' ');
         var accessToken = await RequestAccessTokenAsync(scopes);
         var client = new HttpClient
         {
@@ -182,7 +182,8 @@ internal sealed class PurchasePlugin
         {
             // Perform On-Behalf-Of flow to get an access token
             var result = await confidentialClient.AcquireTokenOnBehalfOf(scopes, 
-                new UserAssertion(_token)).ExecuteAsync();
+                new UserAssertion(_token))
+                .ExecuteAsync();
 
             return result.AccessToken;
         }

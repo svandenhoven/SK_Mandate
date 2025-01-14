@@ -10,7 +10,6 @@ namespace PurchaseAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("[controller]")]
-    [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
     public class PurchaseController : ControllerBase
     {
         private readonly ILogger<PurchaseController> _logger;
@@ -21,6 +20,8 @@ namespace PurchaseAPI.Controllers
         }
 
         [HttpPost(Name = "Purchase")]
+        [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes:Purchase")]
+
         public IActionResult Post([FromBody] Product product)
         {
             //Get mandate from request headers
@@ -44,6 +45,7 @@ namespace PurchaseAPI.Controllers
         }
 
         [HttpGet(Name = "GetProductInformation")]
+        [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes:Prices")]
         public IActionResult Get(string productName)
         {
             Random random = new Random();
@@ -55,18 +57,21 @@ namespace PurchaseAPI.Controllers
                     Name = productName,
                     Manufacturer = "King Fruits",
                     Price = (decimal) (basePrice + random.NextDouble()),
+                    Discount = "5% Discount for purchases between 15 and 25 items. 10% Discount for purchases between 25-70 items. 20% Discount for purchases for more."
                 },
                 new ProductSpecification
                 {
                     Name = productName,
                     Manufacturer = "Fruitopia Market",
                     Price = (decimal) (basePrice + random.NextDouble()),
+                    Discount = "6% Discount for purchases between 10 and 20 items. 15% Discount for purchases between 20-40 items. 15% Discount for purchases for more."
                 },
                 new ProductSpecification
                 {
                     Name = productName,
                     Manufacturer = "The Juicy Orchard",
                     Price = (decimal) (basePrice + random.NextDouble()),
+                    Discount = "1% Discount for purchases between 15 and 25 items. 15% Discount for purchases between 25-55 items. 35% Discount for purchases for more."
                 }
             }; 
 

@@ -18,22 +18,22 @@ namespace AgentMandate.Services
                 Action = "Purchase",
                 GrantedByUserId = userId, // User ID of the person granting the mandate
                 ValidFrom = DateTime.UtcNow,
-                ValidUntil = DateTime.UtcNow.AddDays(30), // Mandate expires in 30 days
+                ValidUntil = DateTime.UtcNow.AddDays(2), // Mandate expiry
                 Conditions = new List<Condition>
                 {
                     new Condition
                     {
                         ConditionId = Guid.NewGuid(),
                         Type = ConditionTypes.MaxPrice,
-                        Value = 100, // Maximum price is $100
-                        Unit = ConditionUnits.EUR,
+                        Value = 150, // Maximum price
+                        Unit = ConditionUnits.USD,
                         Operator = ConditionOperators.LessThanOrEqual
                     },
                     new Condition
                     {
                         ConditionId = Guid.NewGuid(),
                         Type = ConditionTypes.MaxQuantity,
-                        Value = 20, // Maximum quantity is 20 units
+                        Value = 100, // Maximum quantity
                         Unit = ConditionUnits.Items,
                         Operator = ConditionOperators.LessThanOrEqual
                     }
@@ -54,7 +54,7 @@ namespace AgentMandate.Services
                         return new MandateValidationResult
                         {
                             IsValid = false,
-                            Message = "Price exceeds the maximum allowed price."
+                            Message = $"Price exceeds the maximum allowed price of {condition.Value}."
                         };
                     }
 
@@ -64,7 +64,7 @@ namespace AgentMandate.Services
                         return new MandateValidationResult
                         {
                             IsValid = false,
-                            Message = "Quantity exceeds the maximum allowed quantity."
+                            Message = $"Quantity exceeds the maximum allowed quantity of {condition.Value}."
                         };
                     }
 
