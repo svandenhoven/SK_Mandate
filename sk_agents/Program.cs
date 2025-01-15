@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Plugins;
+using Microsoft.Extensions.Logging;
 
 // Get the settings
 Settings settings = new Settings();
@@ -55,6 +56,9 @@ builder.Plugins.AddFromObject(purchasePlugin);
 // Enable Invocation Filter by uncomment below line
 //builder.Services.AddSingleton<IFunctionInvocationFilter, ApprovalFilter>();
 
+// add logging
+builder.Services.AddLogging(configure => configure.AddConsole());
+builder.Services.AddLogging(configure => configure.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Critical));
 Kernel kernel = builder.Build();
 
 // Add the access token to the kernel
