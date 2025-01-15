@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace AgentMandate.Models
 {
+    /// <summary>
+    /// Represents the specification of a product.
+    /// </summary>
     public class ProductSpecification
     {
         public string Name { get; set; }

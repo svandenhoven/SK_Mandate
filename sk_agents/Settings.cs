@@ -3,6 +3,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace AgentsSample;
 
+/// <summary>
+/// Represents the settings for the application.
+/// </summary>
 public class Settings
 {
     private readonly IConfigurationRoot configRoot;

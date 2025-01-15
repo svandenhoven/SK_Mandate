@@ -108,9 +108,7 @@ ChatCompletionAgent agent =
             Additional Requirements:
             - Always mention which product was chosen, the price, and the manufacturer.
             - Include all prices and discounts for all manufacturers in the report.
-            - Provide a detailed explanation of the decision-making process to ensure transparency for bookkeeping and auditing.
-            
-              
+            - Provide a detailed explanation of the decision-making process to ensure transparency for bookkeeping and auditing.       
             """,
         Kernel = kernel,
         Arguments =

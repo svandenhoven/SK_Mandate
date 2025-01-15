@@ -15,6 +15,9 @@ using AgentsSample;
 
 namespace Plugins;
 
+/// <summary>
+/// Represents a plugin for purchasing products.
+/// </summary>
 internal sealed class PurchasePlugin
 {
     private readonly string _token = string.Empty;

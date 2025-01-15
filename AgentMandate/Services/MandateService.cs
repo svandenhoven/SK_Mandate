@@ -9,6 +9,11 @@ namespace AgentMandate.Services
 {
     public class MandateService
     {
+        /// <summary>
+        /// Retrieves the mandates for a given user.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public static List<Mandate> GetMandates(string userId)
         {
             // Below code is for reference only, in real life the object would be retrieve from a Mandate Management Solution
@@ -42,6 +47,14 @@ namespace AgentMandate.Services
 
             return [mandate];
         }
+
+        /// <summary>
+        /// Validates the action against the conditions of the mandate.
+        /// </summary>
+        /// <param name="mandates"></param>
+        /// <param name="price"></param>
+        /// <param name="quantity"></param>
+        /// <returns></returns>
         public static MandateValidationResult ValidateActionAgainstConditions(List<Mandate> mandates, decimal price, int quantity)
         {
             foreach (var mandate in mandates)

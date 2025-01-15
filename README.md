@@ -132,16 +132,14 @@ The mandate is shown below as class diagram.
            |
            |
            v
-+---------------------+
-|     Condition       |
-+---------------------+
-| - ConditionId: Guid |
-| - Type:             |
-|   ConditionTypes    |
-| - Value: decimal    |
-| - Unit:             |
-|   ConditionUnits    |
-+---------------------+
++------------------------+
+|     Condition          |
++------------------------+
+| - ConditionId: Guid    |
+| - Type: ConditionTypes |
+| - Value: decimal       |
+| - Unit: ConditionUnits |
++------------------------+
 ```
 
 ## Prerequisites
