@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Variables
-tenantId="53fe434a-80dd-45a1-83f4-e0c7986fe643"
-subscriptionId="28deb1e4-1288-4749-8221-d6f47182e2a0"
+tenantId="your-tenant-id"
+subscriptionId="your-subscription-id"
 appRegApiName="PurchaseAgentAPI"
 appRegClientName="PurchaseAgent"
 
