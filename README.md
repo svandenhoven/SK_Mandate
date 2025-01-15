@@ -249,7 +249,11 @@ After the script completes, you can verify the app registrations and permissions
 
 ### Run the application
 
+1. **Visual Studio 2022**  
 Open the application [AgentMandate.sln](./AgentMandate.sln) in Visual Studio 2022. Ensure that the projects PurchaseAPI and sk_agent are set as start-up project. This can be done via the properties of the solution. Press F5.
+
+2. **Visual Code**  
+Open the SK_MANDATE in Visual Code. Ensure that all settings are done. You can start both projects by choosing "Launch Both" in the Run and Debug Pane. You can access the UI in the Debug Console of sk_agent.
 
 ### Troubleshooting
 
