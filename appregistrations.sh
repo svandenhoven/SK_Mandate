@@ -3,6 +3,8 @@
 # Variables
 tenantId="53fe434a-80dd-45a1-83f4-e0c7986fe643"
 subscriptionId="28deb1e4-1288-4749-8221-d6f47182e2a0"
+appRegApiName="PurchaseAgentAPI"
+appRegClientName="PurchaseAgent"
 
 # Login to Azure
 az login
@@ -11,7 +13,7 @@ az login
 az account set --subscription $subscriptionId
 
 # Create the PurchaseAPI app registration
-purchaseApiObjectId=$(az ad app create --display-name "PurchaseAgentAPI" --query id -o tsv)
+purchaseApiObjectId=$(az ad app create --display-name "$appRegApiName" --query id -o tsv)
 
 # Retrieve the object ID of the PurchaseAPI app registration
 purchaseApiAppId=$(az ad app list --filter "id eq '$purchaseApiObjectId'" --query "[0].appId" -o tsv)
@@ -65,7 +67,7 @@ echo "Scopes products.prices and products.purchase added to the Expose an API se
 
 ### Client App Registration ############################################################################################################
 # Create the PurchaseAgent app registration
-purchaseAgentAppId=$(az ad app create --display-name "PurchaseAgent" --public-client-redirect-uris "http://localhost" --query appId -o tsv)
+purchaseAgentAppId=$(az ad app create --display-name "$appRegClientName" --public-client-redirect-uris "http://localhost" --query appId -o tsv)
 
 # Retrieve the object ID of the PurchaseAgent2 app registration
 purchaseAgentObjectId=$(az ad app show --id $purchaseAgentAppId --query "id" -o tsv)
@@ -118,15 +120,15 @@ EOF
 
 echo "Scope access_as_user added to the Expose an API section."
 
-# Output the details
-echo "PurchaseAPI App Registration:"
-echo "App ID: $purchaseApiAppId"
+# Output  details
+echo "$appRegApiName App Registration:"
+echo "Client ID API: $purchaseApiAppId"S
 echo "Tenant ID: $tenantId"
 echo "Scopes: products.prices, products.purchase"
-
-echo "PurchaseAgent App Registration:"
-echo "App ID: $purchaseAgentAppId"
+echo ""
+echo "$appRegClientName App Registration:"
+echo "Client Id: $purchaseAgentAppId"
+echo "Client Secret: <Please create a for $purchaseAgentAppId in Azure Portal>"
 echo "Tenant ID: $tenantId"
 echo "Scopes: api://$purchaseAgentAppId/access_as_user"
-echo "Scopes: products.prices, products.purchase"
 echo "APIScopes: api://$purchaseApiAppId/products.prices api://$purchaseApiAppId/products.purchase"
