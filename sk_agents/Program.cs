@@ -65,7 +65,6 @@ Console.WriteLine($"User signed in: {result.Account.Username}");
 // Define the agent
 Console.WriteLine("Defining agent...");
 
-//               - If necessary, split the purchase into multiple transactions to achieve the minimum price.
 ChatCompletionAgent agent =
     new()
     {
@@ -116,7 +115,7 @@ ChatCompletionAgent agent =
     };
 
 
-// Add the mandates to the agent
+// Add the mandates to the agent, this is used when invocationfilter is used
 kernel.Data.Add("mandates", mandates);
 
 Console.WriteLine("Ready!");
