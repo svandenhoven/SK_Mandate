@@ -70,6 +70,8 @@ This detailed report provides transparency and ensures proper record-keeping for
 
 ## Architecture
 
+The agent is build using Semantic Kernel Agent Framework, see [link](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/?pivots=programming-language-csharp).
+
 The application consists of two main components:
 
 1. **PurchaseAPI**: This is an API that provides endpoints for accessing product prices and making purchases. It is registered as an Azure AD application with specific scopes (`product.prices` and `product.purchase`) that define the permissions required to access these endpoints.
