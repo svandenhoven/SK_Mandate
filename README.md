@@ -1,4 +1,4 @@
-# PurchaseAPI and PurchaseAgent2 Application Setup
+# PurchaseAPI and PurchaseAgent Application Setup
 
 ## Purchase Agent with Mandate
 
