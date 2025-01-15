@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "buildAPI",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/sk_agents"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "buildAgent",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/sk_agents"
+            ],
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}

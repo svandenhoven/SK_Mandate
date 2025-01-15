@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch sk_agents",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildAgent",
+            "program": "${workspaceFolder}/sk_agents/bin/Debug/net9.0/sk_agent.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/sk_agents",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "Launch PurchaseAPI",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildAPI",
+            "program": "${workspaceFolder}/PurchaseAPI/bin/Debug/net9.0/PurchaseAPI.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/PurchaseAPI",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Launch Both",
+            "configurations": ["Launch sk_agents", "Launch PurchaseAPI"]
+        }
+    ]
+}
