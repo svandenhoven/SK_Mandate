@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel;
 using sk_agent.Models;
 using AgentMandate.Services;
 using AgentsSample;
+using PurchaseAPI.Models;
 
 namespace Plugins;
 
@@ -47,7 +48,7 @@ internal sealed class PurchasePlugin
         }
         var result = await Purchase(productName, quantity);
 
-        return $"The purchase of {quantity} item(s) of {productName} completed! {result}";
+        return result.ReturnMessage!;
     }
 
     [KernelFunction]
@@ -91,7 +92,7 @@ internal sealed class PurchasePlugin
         }
     }
 
-    private async Task<string> Purchase(string productName, int quantity)
+    private async Task<PurchaseResult> Purchase(string productName, int quantity)
     {
         using HttpClient client = await CreateHttpClient();
         var mandatesJson = JsonSerializer.Serialize(_mandates);
@@ -109,6 +110,16 @@ internal sealed class PurchasePlugin
 
         var response = await client.PostAsync("/Purchase", content);
         var responseContent = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode)
+        {
+            return new PurchaseResult
+            {
+                IsSuccessFullPurchase = false,
+                ReturnMessage = $"Failed to purchase product: {responseContent}"
+            };
+        }
+
+
         var options = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -117,18 +128,19 @@ internal sealed class PurchasePlugin
 
         if (purchaseResponse != null)
         {
-            return $"Purchase ID: {purchaseResponse.PurchaseId}";
+            return new PurchaseResult
+            {
+                IsSuccessFullPurchase = true,
+                ReturnMessage = $"Purchase ID: {purchaseResponse.PurchaseId}"
+            };
         }
         else
         {
-            if (!response.IsSuccessStatusCode)
+            return new PurchaseResult
             {
-                throw new Exception($"Failed to complete purchase: {response.ReasonPhrase}");
-            }
-            else
-            {
-                throw new Exception("Failed to parse purchase response.");
-            }
+                IsSuccessFullPurchase = false,
+                ReturnMessage = $"Failed to parse purchase response."
+            };
         }
     }
 
