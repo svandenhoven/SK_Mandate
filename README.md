@@ -2,7 +2,10 @@
 
 ## Purchase Agent with Mandate
 
-This application is a Semantic Kernel Agent that can purchase products. There is a plugin and an API to do the purchase. There is a mandate implemented that give constraints to the purchase an agent can do. Below is an sample outcome of UI
+This application is a Semantic Kernel Agent that can purchase products. 
+There is a plugin and an API to do the purchase. 
+There is a mandate implemented that give constraints to the purchase an agent can do. 
+Below is an sample outcome of UI
 
 ```plaintext
 Authenticating user...
@@ -68,43 +71,89 @@ Ready!
 This detailed report provides transparency and ensures proper record-keeping for auditing purposes. The chosen manufacturer, King Fruits, was selected for providing the lowest total cost while adhering to the unit limit constraints. All relevant purchase details are documented for future reference.
 ```
 
+### Key Features
+
+- **Retrieve Product Prices**: Allows users to query the prices of products available in the system.
+- **Make Purchases**: Enables users to purchase products by specifying the product details and quantity.
+- **Integration with PurchaseAPI**: Communicates with the PurchaseAPI to perform the necessary actions based on user commands.
+- **Validate Mandate of Agents**: This solution provides manner to ensure an agent is calling the API and way for the API to validate the agents Mandate.
+- **Purchase Documentation**: On successful purchase a Microsoft Word document is created and stored in "MyDocuments"\Purchases.
+
 ## Architecture
 
 The agent is build using Semantic Kernel Agent Framework, see [link](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/?pivots=programming-language-csharp).
 
 The application consists of two main components:
+  
+1. **PurchaseAgent**:  This is a client application that interacts with the PurchaseAPI. 
+The PurchaseAgent is a Semantic Kernel Agent that delivers a chat interface in a console app, allowing users to interact with the PurchaseAPI through natural language commands.  
+The client application uses the OAuth 2.0 authorization code flow to authenticate users and obtain access tokens for calling the PurchaseAPI.
+The PurchaseAgent has a **PurchasePlugin** to do Purchase and a **DocumentPlugin** to document the Purchase.
 
-1. **PurchaseAPI**: This is an API that provides endpoints for accessing product prices and making purchases. It is registered as an Azure AD application with specific scopes (`product.prices` and `product.purchase`) that define the permissions required to access these endpoints.
+1. **PurchaseAPI**: This is an API that provides endpoints for accessing product prices and making purchases. 
+It uses the access token to validate if an authorized user. In addition, it uses the scopes to determine if the call is done by an user or by an agent.
+When the call is done by an agent, the PurchaseAPI will validate the mandate of the agent.
 
-2. **PurchaseAgent**: This is a client application that interacts with the PurchaseAPI. It is registered as a public client application in Azure AD and is configured with the necessary permissions to access the PurchaseAPI endpoints. The client application uses the OAuth 2.0 authorization code flow to authenticate users and obtain access tokens for calling the PurchaseAPI. Additionally, the PurchaseAgent is a Semantic Kernel Agent that delivers a chat interface in a console app, allowing users to interact with the PurchaseAPI through natural language commands.
+### How does the API know it is called by an agent?
 
-### OpenAI or Azure OpenAI integration
+The PurchaseAgent is a client application that interacts with the PurchaseAPI. 
+The PurchaseAgent needs to inform the PurchaseAPI that the call is made by an agent.
 
-The solution with SK used OpenAI integration for:
+See the below diagram that shows this interaction.
 
-- **Natural Language Processing**: Utilizes natural language processing to understand and execute user commands in a conversational manner.
-- **Conversation Control and Understanding**: OpenAI is used to control and understand the conversation, ensuring that user inputs are correctly interpreted and appropriate responses are generated.
-- **Planning and Decision Making**: OpenAI is also used for planning and decision making, enabling the system to make informed decisions based on user inputs and context.
+```mermaid
+sequenceDiagram
+    participant User
+    participant PurchaseAgent
+    participant EntraID as Entra ID
+    participant PurchasePlugin
+    participant PurchaseAPI
 
-### Semantic Kernel Plugin: PurchasePlugin
+    User->>PurchaseAgent: Start Login
+    PurchaseAgent->>User: Send Login Request
+    User->>EntraID: Login
+    EntraID->>User: Tokens
 
-The `PurchasePlugin` class is a Semantic Kernel plugin that provides a set of commands for interacting with the PurchaseAPI. It enables users to perform actions such as retrieving product prices and making purchases through natural language commands in a chat interface. The plugin integrates with the PurchaseAgent to facilitate seamless communication with the PurchaseAPI.
+    PurchaseAgent->>PurchasePlugin: Pass Access Token
+    PurchasePlugin->>EntraID: Request Access Token for API(On-Behalf-Of)
+    EntraID-->>PurchasePlugin: Return Access Token (act_as_agent scope)
 
-#### Key Features
+    PurchasePlugin->>PurchaseAPI: Call PurchaseAPI with Access Token
+    PurchaseAPI->>PurchaseAPI: Validate Access Token
+    alt Access Token contains act_as_agent scope
+         PurchaseAPI->>PurchaseAPI: Check Mandate
+         alt Valid Mandate
+               PurchaseAPI-->>PurchasePlugin: Return Response (Mandate Validated)
+         else [Purchase not accourding Mandate]
+               PurchaseAPI-->>PurchasePlugin: Return Unauthorized
+         end
+    else Access Token does not contain act_as_agent scope
+         PurchaseAPI-->>PurchasePlugin: Return Unauthorized
+    end
+    PurchasePlugin-->>PurchaseAgent: Return Purchase Result
+    PurchaseAgent->>PurchaseAgent: Process Purchase Result
+    PurchaseAgent->>DocumentPlugin: Document Purchase
+    PurchaseAgent-->>User: Show Purchase
+```
 
-- **Retrieve Product Prices**: Allows users to query the prices of products available in the system.
-- **Make Purchases**: Enables users to purchase products by specifying the product details and quantity.
-- **Integration with PurchaseAPI**: Communicates with the PurchaseAPI to perform the necessary actions based on user commands.
+The permissions `act_as_user` and `act_as_agent` are used to create an access token with one of these scopes.
+With these scopes the Purchase Agent can securely notify the PurchaseAPI if it is called by an user or by an agent (or at least has to act as such).
+The PurchaseAPI will validate if one of the scopes is present to ensure that the call cannot be mistakenly done as an user.
+When the access token contain the `act_as_agent` scope, it is the responsibility of the PurchaseAPI to validate the mandate of the agent.
+
+### Mandate Validation
+
+There are two options to give the mandate to the PurchaseAPI:
+
+1. Sent the mandate as a Header to the PurchaseAPI
+1. Store the mandate in a datastore and have it retrieved by the PurchaseAPI based on the user id.
+
+In the current solution we use option 1. This needs to have an signature to ensure it has not been tampered with.
+This is a TODO action.
 
 ### Agent Mandate Service
 
 The Agent Mandate Service is responsible for creating mandates that control the actions an agent is allowed to perform. A mandate defines the permissions and constraints for an agent, ensuring that it operates within the specified boundaries. This service is crucial for maintaining security and governance over the actions performed by the agent.
-
-#### Key Features
-
-- **Create Mandates**: Allows to define and create mandates that specify the actions an agent can perform.
-- **Control Actions**: Ensures that agents operate within the boundaries defined by their mandates, preventing unauthorized actions.
-- **Integration with PurchaseAgent**: Works seamlessly with the PurchaseAgent to enforce mandates and control agent behaviour.
 
 The mandate is defined by the Mandate.cs class. This class Mandate and Condition class. The Mandate contains a list of conditions that will define the boundaries for the agent. A Example condition is:
 
@@ -143,6 +192,24 @@ The mandate is shown below as class diagram.
 | - Unit: ConditionUnits |
 +------------------------+
 ```
+
+### Semantic Kernel plugins
+
+#### PurchasePlugin
+
+The `PurchasePlugin` class is a Semantic Kernel plugin that provides a set of commands for interacting with the PurchaseAPI. It enables users to perform actions such as retrieving product prices and making purchases through natural language commands in a chat interface. The plugin integrates with the PurchaseAgent to facilitate seamless communication with the PurchaseAPI.
+
+#### DocumentPlugin
+
+The `DocumentPlugin` is a Semantic Kernel plugin that is able to transform HTML content into a Open XML (Word) document. It creates a name an stores it in local MyDocument folder.
+
+### OpenAI or Azure OpenAI integration
+
+The solution with SK used OpenAI integration for:
+
+- **Natural Language Processing**: Utilizes natural language processing to understand and execute user commands in a conversational manner.
+- **Conversation Control and Understanding**: OpenAI is used to control and understand the conversation, ensuring that user inputs are correctly interpreted and appropriate responses are generated.
+- **Planning and Decision Making**: OpenAI is also used for planning and decision making, enabling the system to make informed decisions based on user inputs and context.
 
 ## Prerequisites
 
@@ -215,7 +282,7 @@ Client Id: <value of $purchaseAgentAppId>
 Client Secret: <Please create a for $purchaseAgentAppId in Azure Portal>
 Tenant ID: <your tenant id>
 Scopes: api://<value of $purchaseAgentAppId>/access_as_user
-APIScopes: api://<value of $purchaseApiAppId>/products.prices api://<value of $purchaseApiAppId>/products.purchase
+APIScopes: api://<value of $purchaseApiAppId>/act_as_agent api://<value of $purchaseApiAppId>/products.prices api://<value of $purchaseApiAppId>/products.purchase
 ```
 
 - Use the output for PurchaseAgentAPI to set the [appsettings.json](./PurchaseAPI/appsettings.json) in PurchaseAPI

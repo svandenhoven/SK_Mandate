@@ -43,6 +43,7 @@ var mandates = MandateService.GetMandates(result.Account.HomeAccountId.Identifie
 
 Console.WriteLine("Initialize plugins...");
 PurchasePlugin purchasePlugin = new(result.AccessToken, mandates, settings);  
+DocumentPlugin documentPlugin = new();
 
 Console.WriteLine("Creating kernel...");
 IKernelBuilder builder = Kernel.CreateBuilder();
@@ -52,17 +53,15 @@ builder.AddAzureOpenAIChatCompletion(
     settings.AzureOpenAI.Endpoint,
     settings.AzureOpenAI.ApiKey);
 builder.Plugins.AddFromObject(purchasePlugin);
+builder.Plugins.AddFromObject(documentPlugin);
 
 // Enable Invocation Filter by uncomment below line
 //builder.Services.AddSingleton<IFunctionInvocationFilter, ApprovalFilter>();
 
 // add logging
 builder.Services.AddLogging(configure => configure.AddConsole());
-builder.Services.AddLogging(configure => configure.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Critical));
+builder.Services.AddLogging(configure => configure.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Warning));
 Kernel kernel = builder.Build();
-
-// Add the access token to the kernel
-kernel.Data.Add("idtoken", result.IdToken);
 
 Console.WriteLine($"User signed in: {result.Account.Username}");
 
@@ -106,10 +105,17 @@ ChatCompletionAgent agent =
                  - Breakdown of any split purchases (quantities, prices, discounts).
                  - A full comparison of all manufacturers, including item prices and discounts.
                  - A clear explanation of the decision-making process for selecting the manufacturer.
-                 - Date of purchase ({{$now}}) and a unique Purchase ID.
+                 - Date of purchase ({{$now}}) the Purchase ID that was returned from the Purchase.
+
+            6. Documentation:
+               - Please generate the detailed report as HTML Content, professional text suitable for a Word document. 
+                 Avoid using markdown formatting (e.g., **bold** or # headings) and instead use proper paragraph breaks, bullet points, and numbering. 
+                Ensure that the text is clear, easy to read, and properly structured for inclusion in a Word document.
+               - Save the document with a unique name in the user's Documents folder.
 
             Additional Requirements:
             - Always mention which product was chosen, the price, and the manufacturer.
+            - Always use 2 decimals for the prices.
             - Include all prices and discounts for all manufacturers in the report.
             - Provide a detailed explanation of the decision-making process to ensure transparency for bookkeeping and auditing.       
             """,

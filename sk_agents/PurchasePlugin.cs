@@ -1,8 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using System.ComponentModel;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -23,7 +20,7 @@ internal sealed class PurchasePlugin
     private readonly string _token = string.Empty;
     private readonly List<Mandate> _mandates;
     private readonly Settings _settings;
-    private readonly bool localMandateValidationRequired = true;
+    private readonly bool localMandateValidationRequired = false;
 
     public PurchasePlugin(string token, List<Mandate> mandates, Settings settings)
     {
@@ -93,30 +90,6 @@ internal sealed class PurchasePlugin
             }
         }
     }
-
-    // This method is used to get an access token doing a re-authenticate.
-    //private async Task<string> getToken()
-    //{
-    //    var app = PublicClientApplicationBuilder.Create(_clientId)
-    //        .WithAuthority(AzureCloudInstance.AzurePublic, _tenantId)
-    //        .WithDefaultRedirectUri()
-    //        .Build();
-    //    AuthenticationResult result;
-    //    string[] scopes = { "user.read" };
-    //    try
-    //    {
-    //        var accounts = await app.GetAccountsAsync();
-    //        result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
-    //            .ExecuteAsync();
-    //    }
-    //    catch (MsalUiRequiredException)
-    //    {
-    //        result = await app.AcquireTokenInteractive(scopes)
-    //            .ExecuteAsync();
-    //    }
-
-    //    return result.AccessToken;
-    //}
 
     private async Task<string> Purchase(string productName, int quantity)
     {
@@ -189,6 +162,30 @@ internal sealed class PurchasePlugin
                 .ExecuteAsync();
 
             return result.AccessToken;
+        }
+        catch (MsalUiRequiredException)
+        {
+            // Handle consent request
+            Console.WriteLine("User consent is required. Please provide consent interactively.");
+
+            // Create a PublicClientApplication for interactive consent
+            var publicClient = PublicClientApplicationBuilder.Create(_settings.AzureAD.ClientId)
+                .WithAuthority(AzureCloudInstance.AzurePublic, _settings.AzureAD.TenantId)
+                .WithDefaultRedirectUri()
+                .Build();
+
+            try
+            {
+                var result = await publicClient.AcquireTokenInteractive(scopes)
+                    .WithAccount((await publicClient.GetAccountsAsync()).FirstOrDefault())
+                    .ExecuteAsync();
+
+                return result.AccessToken;
+            }
+            catch (MsalException ex)
+            {
+                Console.WriteLine($"Error acquiring token interactively: {ex.Message}");
+            }
         }
         catch (MsalServiceException ex)
         {

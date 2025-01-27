@@ -31,8 +31,10 @@ echo "Service principal for PurchaseAPI created."
 # Generate UUIDs for scopes
 productPricesScopeId=$(python -c 'import uuid; print(str(uuid.uuid4()))')
 productPurchaseScopeId=$(python -c 'import uuid; print(str(uuid.uuid4()))')
+actAsAgentScopeId=$(python -c 'import uuid; print(str(uuid.uuid4()))')
+actAsUserScopeId=$(python -c 'import uuid; print(str(uuid.uuid4()))')
 
-echo "UUIDs generated for scopes: $productPricesScopeId and $productPurchaseScopeId"
+echo "UUIDs generated for scopes: $productPricesScopeId and $productPurchaseScopeId and $actAsAgentScopeId and $actAsUserScopeId"
 
 # Add scopes to the "Expose an API" section
 az ad app update --id $purchaseApiObjectId --set api=@- <<EOF
@@ -57,6 +59,26 @@ az ad app update --id $purchaseApiObjectId --set api=@- <<EOF
       "userConsentDescription": "Allows you to purchase products.",
       "userConsentDisplayName": "Purchase products",
       "value": "products.purchase"
+    },
+    {
+      "adminConsentDescription": "This scope indicates that the access token is only allowed to act as agent.",
+      "adminConsentDisplayName": "act_as_agent",
+      "id": "$actAsAgentScopeId",
+      "isEnabled": true,
+      "type": "User",
+      "userConsentDescription": "This scope indicates that the access token is only allowed to act as agent.",
+      "userConsentDisplayName": "act_as_agent",
+      "value": "act_as_agent"
+    },
+    {
+      "adminConsentDescription": "This scope indicates that the access token is only to act as user.",
+      "adminConsentDisplayName": "act_as_user",
+      "id": "$actAsUserScopeId",
+      "isEnabled": true,
+      "type": "User",
+      "userConsentDescription": "This scope indicates that the access token is allowed to act as user.",
+      "userConsentDisplayName": "act_as_user",
+      "value": "act_as_user"
     }
   ]
 }
