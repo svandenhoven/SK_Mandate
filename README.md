@@ -1,11 +1,31 @@
-# PurchaseAPI and PurchaseAgent Application Setup
+# Agents Mandates
+
+## The Challenge: How to give an Agent a mandate to constraint its allowed actions
+
+When an agent can execute actions, the agent needs to have permission to be allowed to perform these action.
+
+ ![Agent Mandate Challenge](./images/mandate_challenge.png)
+
+To prevent misuse, an agent can be granted a mandate to do a certain action within a set of conditions. This is similar to permissions and access token scopes in Authorization, only this does not have conditions.
+
+ > **Definition**  
+ > A mandate is a set of specific instructions, objectives, or responsibilities assigned to the AI agent, outlining the tasks it is authorized to perform and the scope within it is allowed to operate.
+
+### Some Thoughts
+
+1. Identity: An agent need to have an identity, a role and there need to be a set of conditions for the role on execution of actions. Before the actions is executed the conditions needs to be validated.
+
+1. The mandates should be dynamic. A user can give an agent a mandate to do an action for a certain amount  of time, for certain conditions. For instance: mandate to buy max 4 tickets when they become available this week, with max prices of $100,- each.
+
+1. Agents should execute their actions within a context, that is defined dynamically on the agent. This context can hold {identity, user, mandate}. During execution, the context is used to validate the mandate of the agent.
+
+1. A user should be able to give a mandate to an agent. The agent can use the mandate to prove it is allowed to do the action. The mandate should not be tampered with (like access token).
+
+1. The entity that performs the action for the agent, should be able to validate the agents mandate (like access token)
 
 ## Purchase Agent with Mandate
 
-This application is a Semantic Kernel Agent that can purchase products. 
-There is a plugin and an API to do the purchase. 
-There is a mandate implemented that give constraints to the purchase an agent can do. 
-Below is an sample outcome of UI
+This application is a Semantic Kernel Agent that can purchase products. There is a plugin and an API to do the purchase. There is a mandate implemented that give constraints to the purchase an agent can do. Below is an sample outcome of UI
 
 ```plaintext
 Authenticating user...
@@ -85,61 +105,61 @@ The agent is build using Semantic Kernel Agent Framework, see [link](https://lea
 
 The application consists of two main components:
   
-1. **PurchaseAgent**:  This is a client application that interacts with the PurchaseAPI. 
+1. **PurchaseAgent**:  This is a client application that interacts with the PurchaseAPI.  
 The PurchaseAgent is a Semantic Kernel Agent that delivers a chat interface in a console app, allowing users to interact with the PurchaseAPI through natural language commands.  
 The client application uses the OAuth 2.0 authorization code flow to authenticate users and obtain access tokens for calling the PurchaseAPI.
 The PurchaseAgent has a **PurchasePlugin** to do Purchase and a **DocumentPlugin** to document the Purchase.
 
-1. **PurchaseAPI**: This is an API that provides endpoints for accessing product prices and making purchases. 
+1. **PurchaseAPI**: This is an API that provides endpoints for accessing product prices and making purchases.  
 It uses the access token to validate if an authorized user. In addition, it uses the scopes to determine if the call is done by an user or by an agent.
 When the call is done by an agent, the PurchaseAPI will validate the mandate of the agent.
 
 ### How does the API know it is called by an agent?
 
-The PurchaseAgent is a client application that interacts with the PurchaseAPI. 
-The PurchaseAgent needs to inform the PurchaseAPI that the call is made by an agent.
+The PurchaseAgent is a client application that interacts with the PurchaseAPI. The PurchaseAgent needs to inform the PurchaseAPI that the call is made by an agent. In this solution this is done by using scopes in an Entra ID Access Token.
+
+The Purchase API exposes an API with scopes `act_as_user` and `act_as_agent`. These are used to create an access token with one of these scopes. With an Access Token with one of these scopes the Purchase Agent can securely notify the PurchaseAPI it is called by an user or by an agent (or at least has to act as such). Because it it an access token, it has consent of the user and cannot be tampered with. The PurchaseAPI will validate if one of the scopes is present. This is needed to ensure that the call cannot be mistakenly done as an user if no scopes are present. 
+When the access token contain the `act_as_agent` scope, it is the responsibility of the PurchaseAPI to validate the mandate of the agent.
 
 See the below diagram that shows this interaction.
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant PurchaseAgent
-    participant EntraID as Entra ID
-    participant PurchasePlugin
-    participant PurchaseAPI
+   participant User
+   participant PurchaseAgent
+   participant EntraID as Entra ID
+   participant PurchasePlugin
+   participant MandateService as Mandate Seervice
+   participant PurchaseAPI
 
-    User->>PurchaseAgent: Start Login
-    PurchaseAgent->>User: Send Login Request
-    User->>EntraID: Login
-    EntraID->>User: Tokens
+   User->>PurchaseAgent: (1) Start Login
+   PurchaseAgent->>User: (2) Send Login Request
+   User->>EntraID: (3) Login
+   EntraID->>User: (4) Tokens
 
-    PurchaseAgent->>PurchasePlugin: Pass Access Token
-    PurchasePlugin->>EntraID: Request Access Token for API(On-Behalf-Of)
-    EntraID-->>PurchasePlugin: Return Access Token (act_as_agent scope)
+   PurchaseAgent->>PurchasePlugin: (5) Pass Access Token
+   PurchasePlugin->>EntraID: (6) Request Access Token for API(On-Behalf-Of)
+   EntraID-->>PurchasePlugin: (7) Return Access Token (act_as_agent scope)
 
-    PurchasePlugin->>PurchaseAPI: Call PurchaseAPI with Access Token
-    PurchaseAPI->>PurchaseAPI: Validate Access Token
-    alt Access Token contains act_as_agent scope
-         PurchaseAPI->>PurchaseAPI: Check Mandate
-         alt Valid Mandate
-               PurchaseAPI-->>PurchasePlugin: Return Response (Mandate Validated)
-         else [Purchase not accourding Mandate]
-               PurchaseAPI-->>PurchasePlugin: Return Unauthorized
-         end
-    else Access Token does not contain act_as_agent scope
-         PurchaseAPI-->>PurchasePlugin: Return Unauthorized
-    end
-    PurchasePlugin-->>PurchaseAgent: Return Purchase Result
-    PurchaseAgent->>PurchaseAgent: Process Purchase Result
-    PurchaseAgent->>DocumentPlugin: Document Purchase
-    PurchaseAgent-->>User: Show Purchase
+   PurchasePlugin ->> MandateService: (8) Get Mandate for User
+   MandateService ->> PurchasePlugin: (9) Return Mandate
+   PurchasePlugin->>PurchaseAPI: (10) Call PurchaseAPI with Access Token and Mandate
+   PurchaseAPI->>PurchaseAPI: (11) Validate Access Token
+   alt Access Token contains act_as_agent scope
+      PurchaseAPI->>PurchaseAPI: (12) Check Mandate
+      alt [Purchase not accourding Mandate]
+            PurchaseAPI-->>PurchasePlugin: (12a) Return Unauthorized
+      end
+   else Access Token does not contain act_as_agent scope
+      PurchaseAPI-->>PurchasePlugin: (13) Return Unauthorized
+   end
+   PurchaseAPI->>PurchaseAPI: (14) Perform Purchase
+   PurchaseAPI->>PurchasePlugin: (15) Return Purchase Result
+   PurchasePlugin->>PurchaseAgent: (16) Return Purchase Result
+   PurchaseAgent->>PurchaseAgent: (17) Process Purchase Result
+   PurchaseAgent->>DocumentPlugin: (17) Document Purchase
+   PurchaseAgent->>User: (18) Show Purchase
 ```
-
-The permissions `act_as_user` and `act_as_agent` are used to create an access token with one of these scopes.
-With these scopes the Purchase Agent can securely notify the PurchaseAPI if it is called by an user or by an agent (or at least has to act as such).
-The PurchaseAPI will validate if one of the scopes is present to ensure that the call cannot be mistakenly done as an user.
-When the access token contain the `act_as_agent` scope, it is the responsibility of the PurchaseAPI to validate the mandate of the agent.
 
 ### Mandate Validation
 
