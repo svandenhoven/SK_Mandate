@@ -82,7 +82,6 @@ ChatCompletionAgent agent =
 
             2. Price Optimization:
                - Account for discounts and identify the lowest total price by comparing offers from all manufacturers.
-               - If necessary, split the purchase into multiple transactions to achieve the minimum price.
                - Specify quantities, unit prices, and discounts for each purchase and explain the rationale for your choices.
                - Clearly justify why other options are more expensive.
 
